@@ -16,6 +16,8 @@ import {
   ChevronDown,
   ChevronUp,
   Camera,
+  CameraOff,
+  RefreshCw,
   Layers,
   CheckCircle2,
 } from 'lucide-react';
@@ -27,7 +29,16 @@ interface IWindow extends Window {
 }
 
 export const DashboardPage: React.FC = () => {
-  const { events, latestEvent, isActive, isLiveConnected, setIsActive, clearLog } = useRecognitionFeed();
+  const {
+    events,
+    latestEvent,
+    isActive,
+    isLiveConnected,
+    feedMode,
+    setFeedMode,
+    setIsActive,
+    clearLog,
+  } = useRecognitionFeed();
 
   // Text-To-Speech (TTS) state
   const [ttsEnabled, setTtsEnabled] = useState<boolean>(true);
@@ -44,6 +55,87 @@ export const DashboardPage: React.FC = () => {
 
   // Auto-scroll ref for the recognition transcript log
   const logContainerRef = useRef<HTMLDivElement>(null);
+
+  // Real Webcam Video Stream State & Ref
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [cameraActive, setCameraActive] = useState<boolean>(true);
+  const [cameraLoading, setCameraLoading] = useState<boolean>(true);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [cameraKey, setCameraKey] = useState<number>(0);
+
+  // Initialize and manage user webcam stream
+  useEffect(() => {
+    let isMounted = true;
+    let localStream: MediaStream | null = null;
+
+    const initCamera = async () => {
+      if (!cameraActive) {
+        setCameraLoading(false);
+        if (videoRef.current && videoRef.current.srcObject) {
+          const s = videoRef.current.srcObject as MediaStream;
+          s.getTracks().forEach((track) => track.stop());
+          videoRef.current.srcObject = null;
+        }
+        return;
+      }
+
+      setCameraLoading(true);
+      setCameraError(null);
+
+      try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          throw new Error('Webcam streaming not supported in this browser environment.');
+        }
+
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            facingMode: 'user',
+          },
+          audio: false,
+        });
+
+        if (isMounted) {
+          localStream = stream;
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+            videoRef.current.play().catch(() => {});
+          }
+          setCameraLoading(false);
+        } else {
+          stream.getTracks().forEach((t) => t.stop());
+        }
+      } catch (err: any) {
+        if (isMounted) {
+          console.error('[LowKeySigns] Error starting webcam:', err);
+          setCameraLoading(false);
+          if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+            setCameraError('Camera permission was blocked. Please click the camera icon in your browser address bar to allow access, then click "Retry".');
+          } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+            setCameraError('No webcam hardware detected. Please attach a USB webcam or enable your laptop camera.');
+          } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+            setCameraError('Camera is already in use by another application. Please close other software using the camera and click "Retry".');
+          } else {
+            setCameraError(`Camera initialization failed: ${err.message || 'Unknown device error'}`);
+          }
+        }
+      }
+    };
+
+    initCamera();
+
+    return () => {
+      isMounted = false;
+      if (localStream) {
+        localStream.getTracks().forEach((t) => t.stop());
+      }
+      if (videoRef.current && videoRef.current.srcObject) {
+        const s = videoRef.current.srcObject as MediaStream;
+        s.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, [cameraActive, cameraKey]);
 
   // Check SpeechRecognition support on mount
   useEffect(() => {
@@ -65,7 +157,6 @@ export const DashboardPage: React.FC = () => {
           setSpeechTranscript(transcript);
           setIsListening(false);
 
-          // Find if any word in the transcript matches our recognized vocabulary or set the first word
           const words = transcript.split(/\s+/);
           const matched = words.find((w: string) => w.length > 1) || transcript;
           setMatchedStaffSign(matched);
@@ -86,12 +177,11 @@ export const DashboardPage: React.FC = () => {
     }
   }, []);
 
-  // Handle SpeechSynthesis (TTS) when new mock word arrives
+  // Handle SpeechSynthesis (TTS) when new word arrives
   useEffect(() => {
     if (!ttsEnabled || !latestEvent) return;
 
     if ('speechSynthesis' in window) {
-      // Cancel previous utterance to avoid queue buildup
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(latestEvent.word);
       utterance.rate = 1.0;
@@ -179,6 +269,37 @@ export const DashboardPage: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full md:w-auto">
+            {/* Feed Stream Mode Selector */}
+            <div className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5 text-xs font-semibold">
+              <button
+                onClick={() => setFeedMode('auto')}
+                className={`px-2.5 py-1 rounded-md transition-colors ${
+                  feedMode === 'auto' ? 'bg-[#1F3864] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+                title="Auto-detect live ML stream with fallback"
+              >
+                Auto Feed
+              </button>
+              <button
+                onClick={() => setFeedMode('demo')}
+                className={`px-2.5 py-1 rounded-md transition-colors ${
+                  feedMode === 'demo' ? 'bg-[#1F3864] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+                title="Continuous demo cycle"
+              >
+                Demo Feed
+              </button>
+              <button
+                onClick={() => setFeedMode('live')}
+                className={`px-2.5 py-1 rounded-md transition-colors ${
+                  feedMode === 'live' ? 'bg-[#1F3864] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+                title="Strict live WebSocket stream only"
+              >
+                Live ML
+              </button>
+            </div>
+
             {/* Real Text-to-Speech Toggle */}
             <button
               onClick={() => setTtsEnabled((prev) => !prev)}
@@ -253,7 +374,6 @@ export const DashboardPage: React.FC = () => {
             </div>
 
             <div className="mt-4 flex flex-col md:flex-row items-start gap-6">
-              {/* Mic action column */}
               <div className="w-full md:w-1/3 flex flex-col gap-3">
                 {!speechSupported ? (
                   <div className="p-3.5 rounded-lg bg-amber-50 border border-amber-200 flex items-start gap-2.5">
@@ -297,7 +417,6 @@ export const DashboardPage: React.FC = () => {
                 )}
               </div>
 
-              {/* Transcribed Speech & Sign Placeholder Layout */}
               <div className="w-full md:w-2/3 bg-slate-50 rounded-lg p-4 border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex-1">
                   <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
@@ -316,7 +435,6 @@ export const DashboardPage: React.FC = () => {
                   )}
                 </div>
 
-                {/* Sign image placeholder area at /assets/signs/{word}.png */}
                 <div className="w-36 h-28 bg-white rounded-lg border border-dashed border-slate-300 flex flex-col items-center justify-center p-2 text-center shrink-0">
                   {matchedStaffSign ? (
                     <div className="flex flex-col items-center justify-center w-full h-full">
@@ -354,52 +472,131 @@ export const DashboardPage: React.FC = () => {
                   Camera Feed
                 </h2>
               </div>
-              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-200/80 text-slate-700">
-                Optical Desk Sensor #1
-              </span>
+
+              {/* Camera Header Actions */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCameraActive((prev) => !prev)}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md border transition-colors ${
+                    cameraActive && !cameraError
+                      ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
+                      : 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200'
+                  }`}
+                  title="Toggle hardware camera"
+                >
+                  {cameraActive && !cameraError ? (
+                    <>
+                      <Camera className="w-3.5 h-3.5 text-emerald-600" />
+                      Live Camera: ON
+                    </>
+                  ) : (
+                    <>
+                      <CameraOff className="w-3.5 h-3.5 text-slate-500" />
+                      Camera: OFF
+                    </>
+                  )}
+                </button>
+
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-slate-200/80 text-slate-700">
+                  Optical Desk Sensor #1
+                </span>
+              </div>
             </div>
 
-            {/* Static Camera Placeholder Box / Visual Demonstration */}
-            <div className="flex-1 bg-slate-900 relative flex flex-col items-center justify-center p-6 text-slate-100 min-h-[380px] overflow-hidden">
-              {/* Subtle tech grid background */}
-              <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#94a3b8_1px,transparent_1px)] [background-size:24px_24px]" />
+            {/* REAL LIVE CAMERA VIEWPORT & INTERACTIVE OVERLAY */}
+            <div className="flex-1 bg-slate-950 relative flex flex-col items-center justify-center min-h-[380px] overflow-hidden">
               
-              {/* Overlay camera feed viewfinder corners */}
-              <div className="absolute top-6 left-6 w-8 h-8 border-t-2 border-l-2 border-slate-400/60 rounded-tl" />
-              <div className="absolute top-6 right-6 w-8 h-8 border-t-2 border-r-2 border-slate-400/60 rounded-tr" />
-              <div className="absolute bottom-6 left-6 w-8 h-8 border-b-2 border-l-2 border-slate-400/60 rounded-bl" />
-              <div className="absolute bottom-6 right-6 w-8 h-8 border-b-2 border-r-2 border-slate-400/60 rounded-br" />
+              {/* Actual HTML5 Video Element Stream */}
+              {cameraActive && (
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className={`absolute inset-0 w-full h-full object-cover transform -scale-x-100 transition-opacity duration-300 ${
+                    cameraLoading || cameraError ? 'opacity-0' : 'opacity-100'
+                  }`}
+                />
+              )}
 
-              {/* Feed Badge */}
-              <div className="absolute top-6 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 text-xs font-medium">
-                <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
-                <span>Simulated Feed — 30 FPS Landmark Tracking</span>
+              {/* Viewfinder corner brackets on top of live video */}
+              <div className="absolute top-5 left-5 w-8 h-8 border-t-2 border-l-2 border-emerald-400/80 rounded-tl pointer-events-none z-10" />
+              <div className="absolute top-5 right-5 w-8 h-8 border-t-2 border-r-2 border-emerald-400/80 rounded-tr pointer-events-none z-10" />
+              <div className="absolute bottom-12 left-5 w-8 h-8 border-b-2 border-l-2 border-emerald-400/80 rounded-bl pointer-events-none z-10" />
+              <div className="absolute bottom-12 right-5 w-8 h-8 border-b-2 border-r-2 border-emerald-400/80 rounded-br pointer-events-none z-10" />
+
+              {/* Floating Live Status Badge */}
+              <div className="absolute top-5 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-black/70 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15 text-xs font-medium text-white z-20 shadow-md">
+                <span className={`w-2 h-2 rounded-full ${cameraActive && !cameraError ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+                <span>
+                  {cameraActive && !cameraError
+                    ? 'Live Camera Active — 30 FPS Optical Tracking'
+                    : cameraLoading
+                    ? 'Connecting to Camera Device...'
+                    : 'Camera Disabled / Fallback Sensor Active'}
+                </span>
               </div>
 
-              {/* Center Graphics */}
-              <div className="relative z-10 flex flex-col items-center text-center max-w-sm">
-                <div className="w-16 h-16 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center mb-4">
-                  <Camera className="w-8 h-8 text-slate-200" aria-hidden="true" />
+              {/* Camera Error or Off State Overlay */}
+              {(!cameraActive || cameraError || cameraLoading) && (
+                <div className="relative z-10 flex flex-col items-center text-center max-w-md p-6 bg-slate-900/90 rounded-2xl border border-white/10 backdrop-blur-md m-4">
+                  {cameraLoading ? (
+                    <>
+                      <RefreshCw className="w-10 h-10 text-emerald-400 animate-spin mb-3" />
+                      <h3 className="text-base font-bold text-white">Starting Optical Sensor</h3>
+                      <p className="text-xs text-slate-300 mt-1">
+                        Requesting camera stream from your browser...
+                      </p>
+                    </>
+                  ) : cameraError ? (
+                    <>
+                      <div className="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center mb-3">
+                        <AlertCircle className="w-6 h-6 text-amber-400" />
+                      </div>
+                      <h3 className="text-base font-bold text-white">Camera Access Required</h3>
+                      <p className="text-xs text-slate-300 mt-1.5 leading-relaxed">
+                        {cameraError}
+                      </p>
+                      <button
+                        onClick={() => {
+                          setCameraActive(true);
+                          setCameraKey((k) => k + 1);
+                        }}
+                        className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-[#1F3864] hover:bg-[#2b4c84] rounded-lg border border-white/20 transition-all shadow-sm"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        Retry Camera Connection
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-12 h-12 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center mb-3">
+                        <CameraOff className="w-6 h-6 text-slate-300" />
+                      </div>
+                      <h3 className="text-base font-bold text-white">Camera Paused</h3>
+                      <p className="text-xs text-slate-300 mt-1">
+                        Optical sensor is currently muted. Click below to turn your camera back on.
+                      </p>
+                      <button
+                        onClick={() => setCameraActive(true)}
+                        className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg transition-all shadow-sm"
+                      >
+                        <Camera className="w-3.5 h-3.5" />
+                        Turn Camera On
+                      </button>
+                    </>
+                  )}
                 </div>
-                <h3 className="text-lg font-bold text-white tracking-wide">
-                  Camera Feed Active
-                </h3>
-                <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                  Optical sensor focused on counter signing zone. Normalizing 21 hand landmarks & upper-body keypoints.
-                </p>
-                <div className="mt-4 px-3 py-1.5 rounded bg-white/10 border border-white/15 text-[11px] font-mono text-slate-300">
-                  Target vocab: 20 locked words &bull; WLASL benchmark
-                </div>
-              </div>
+              )}
 
               {/* Bottom active feedback strip */}
-              <div className="absolute bottom-4 inset-x-6 z-10 flex items-center justify-between text-xs text-slate-400 bg-black/50 backdrop-blur-md px-4 py-2 rounded-lg border border-white/10">
+              <div className="absolute bottom-3 inset-x-4 z-20 flex items-center justify-between text-xs text-slate-300 bg-black/60 backdrop-blur-md px-4 py-2 rounded-lg border border-white/10">
                 <span className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#365b99]" />
-                  Resolution: 1080p Optical
+                  <span className={`w-2 h-2 rounded-full ${cameraActive && !cameraError ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+                  Resolution: 1080p / 720p Optical Stream
                 </span>
                 <span className="text-[11px] font-mono text-slate-300">
-                  Client-side inference
+                  {cameraActive && !cameraError ? 'Active Mirror View' : 'Diagnostic Mode'}
                 </span>
               </div>
             </div>
@@ -419,12 +616,12 @@ export const DashboardPage: React.FC = () => {
                 {isLiveConnected ? (
                   <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-300">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
-                    Live ML Stream (ws://localhost:8000)
+                    Live ML Stream
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-md bg-amber-50 text-amber-900 border border-amber-300">
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-500" aria-hidden="true" />
-                    Simulated Demo Feed (Backend Offline)
+                    Continuous Demo Stream
                   </span>
                 )}
                 <span className="text-xs font-medium text-slate-500 hidden xl:inline">
@@ -447,12 +644,10 @@ export const DashboardPage: React.FC = () => {
                   </span>
                 </div>
 
-                {/* Most recent entry visually emphasized (larger/bolder) */}
-                <div className="text-3xl sm:text-4xl font-extrabold text-[#1F3864] tracking-tight py-1">
+                <div className="text-3xl sm:text-4xl font-extrabold text-[#1F3864] tracking-tight py-1 capitalize">
                   "{latestEvent.word}"
                 </div>
 
-                {/* Confidence display next to the latest word: Progress bar AND Text label */}
                 {confidenceInfo && (
                   <div className="mt-3 space-y-1.5">
                     <div className="flex items-center justify-between text-xs">
@@ -474,7 +669,6 @@ export const DashboardPage: React.FC = () => {
                       </span>
                     </div>
 
-                    {/* Accessible Progress Bar */}
                     <div
                       className="w-full bg-slate-200 rounded-full h-2 overflow-hidden"
                       role="progressbar"

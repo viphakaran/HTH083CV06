@@ -35,6 +35,8 @@ export interface RecognitionFeedState {
   latestEvent: RecognitionEvent | null;
   isActive: boolean;
   isLiveConnected: boolean;
+  feedMode: 'auto' | 'demo' | 'live';
+  setFeedMode: (mode: 'auto' | 'demo' | 'live') => void;
   setIsActive: (active: boolean | ((prev: boolean) => boolean)) => void;
   clearLog: () => void;
 }
@@ -43,11 +45,13 @@ export interface RecognitionFeedState {
  * Unified Recognition Feed Hook.
  * Supports:
  * 1. Automatic Live WebSocket connection to Python ML backend (`ws://localhost:8000/ws`)
- * 2. Automatic, graceful fallback to calibrated simulated demo stream if backend is offline
+ * 2. Seamless continuous demonstration mode when live backend is idle or offline
  */
 export function useRecognitionFeed(): RecognitionFeedState {
   const [isActive, setIsActive] = useState<boolean>(true);
   const [isLiveConnected, setIsLiveConnected] = useState<boolean>(false);
+  const [feedMode, setFeedMode] = useState<'auto' | 'demo' | 'live'>('auto');
+
   const [events, setEvents] = useState<RecognitionEvent[]>(() => {
     const initialWord = LOCKED_VOCABULARY[0]; // 'help'
     const initialConfidence = 0.94;
@@ -64,8 +68,9 @@ export function useRecognitionFeed(): RecognitionFeedState {
   const [latestEvent, setLatestEvent] = useState<RecognitionEvent | null>(() => events[0] ?? null);
   const currentIndexRef = useRef<number>(1);
   const wsRef = useRef<WebSocket | null>(null);
+  const lastLiveMessageTimeRef = useRef<number>(0);
 
-  // Attempt live WebSocket connection with graceful fallback
+  // Attempt live WebSocket connection with graceful reconnection
   useEffect(() => {
     let reconnectTimeout: number | undefined;
 
@@ -84,6 +89,7 @@ export function useRecognitionFeed(): RecognitionFeedState {
           try {
             const data = JSON.parse(event.data);
             if (data && data.word) {
+              lastLiveMessageTimeRef.current = Date.now();
               const newEvent: RecognitionEvent = {
                 word: data.word.toLowerCase(),
                 confidence: typeof data.confidence === 'number' ? data.confidence : 0.88,
@@ -103,12 +109,11 @@ export function useRecognitionFeed(): RecognitionFeedState {
 
         socket.onclose = () => {
           setIsLiveConnected(false);
-          // Try to reconnect every 6 seconds
-          reconnectTimeout = window.setTimeout(connectWebSocket, 6000);
+          reconnectTimeout = window.setTimeout(connectWebSocket, 5000);
         };
       } catch (err) {
         setIsLiveConnected(false);
-        reconnectTimeout = window.setTimeout(connectWebSocket, 6000);
+        reconnectTimeout = window.setTimeout(connectWebSocket, 5000);
       }
     };
 
@@ -122,15 +127,30 @@ export function useRecognitionFeed(): RecognitionFeedState {
     };
   }, [isActive]);
 
-  // Fallback simulated feed timer only runs if NOT connected to live backend
+  // Feed cycling logic:
+  // Runs if:
+  // 1. feedMode is 'demo'
+  // 2. OR feedMode is 'auto' AND (not connected OR no live message received in past 4s)
   useEffect(() => {
-    if (!isActive || isLiveConnected) return;
+    if (!isActive) return;
 
     const intervalId = window.setInterval(() => {
+      const now = Date.now();
+      const hasRecentLiveMessage = isLiveConnected && (now - lastLiveMessageTimeRef.current) < 4000;
+
+      if (feedMode === 'live' && !hasRecentLiveMessage) {
+        return; // strictly wait for live packets
+      }
+
+      if (feedMode === 'auto' && hasRecentLiveMessage) {
+        return; // live packet stream is currently active
+      }
+
+      // Generate next calibrated demonstration sign from locked vocabulary
       const word = LOCKED_VOCABULARY[currentIndexRef.current % LOCKED_VOCABULARY.length];
       currentIndexRef.current += 1;
 
-      const rawConfidence = 0.6 + Math.random() * (0.98 - 0.6);
+      const rawConfidence = 0.68 + Math.random() * (0.97 - 0.68);
       const confidence = Math.round(rawConfidence * 100) / 100;
 
       const newEvent: RecognitionEvent = {
@@ -141,12 +161,12 @@ export function useRecognitionFeed(): RecognitionFeedState {
 
       setEvents((prev) => [...prev, newEvent]);
       setLatestEvent(newEvent);
-    }, 2500);
+    }, 2600);
 
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [isActive, isLiveConnected]);
+  }, [isActive, isLiveConnected, feedMode]);
 
   const clearLog = () => {
     setEvents([]);
@@ -158,6 +178,8 @@ export function useRecognitionFeed(): RecognitionFeedState {
     latestEvent,
     isActive,
     isLiveConnected,
+    feedMode,
+    setFeedMode,
     setIsActive,
     clearLog,
   };
