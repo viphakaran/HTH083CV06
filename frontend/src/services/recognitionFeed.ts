@@ -111,7 +111,7 @@ export function useRecognitionFeed(): RecognitionFeedState {
           setIsLiveConnected(false);
           reconnectTimeout = window.setTimeout(connectWebSocket, 5000);
         };
-      } catch (err) {
+      } catch {
         setIsLiveConnected(false);
         reconnectTimeout = window.setTimeout(connectWebSocket, 5000);
       }

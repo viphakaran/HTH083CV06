@@ -311,7 +311,7 @@ class SignRecognizer:
 
         # 3. Draw Landmark Skeleton
         for hl in raw_landmarks:
-            pts = [(int(lm.x * w), int(lm.y * h)) for lm in hl]
+            pts = [(int(np.clip(lm.x, 0.0, 1.0) * w), int(np.clip(lm.y, 0.0, 1.0) * h)) for lm in hl]
             for p1, p2 in HAND_CONNECTIONS:
                 cv2.line(bgr_frame, pts[p1], pts[p2], (0, 220, 100), 2, cv2.LINE_AA)
             for idx, pt in enumerate(pts):

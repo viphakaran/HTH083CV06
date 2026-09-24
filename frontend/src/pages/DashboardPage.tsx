@@ -50,7 +50,11 @@ export const DashboardPage: React.FC = () => {
   const [isListening, setIsListening] = useState<boolean>(false);
   const [speechTranscript, setSpeechTranscript] = useState<string>('');
   const [matchedStaffSign, setMatchedStaffSign] = useState<string | null>(null);
-  const [speechSupported, setSpeechSupported] = useState<boolean>(true);
+  const [speechSupported] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    const win = window as unknown as IWindow;
+    return !!(win.SpeechRecognition || win.webkitSpeechRecognition);
+  });
   const recognitionRef = useRef<any>(null);
 
   // Auto-scroll ref for the recognition transcript log
@@ -67,14 +71,15 @@ export const DashboardPage: React.FC = () => {
   useEffect(() => {
     let isMounted = true;
     let localStream: MediaStream | null = null;
+    const currentVideo = videoRef.current;
 
     const initCamera = async () => {
       if (!cameraActive) {
         setCameraLoading(false);
-        if (videoRef.current && videoRef.current.srcObject) {
-          const s = videoRef.current.srcObject as MediaStream;
+        if (currentVideo && currentVideo.srcObject) {
+          const s = currentVideo.srcObject as MediaStream;
           s.getTracks().forEach((track) => track.stop());
-          videoRef.current.srcObject = null;
+          currentVideo.srcObject = null;
         }
         return;
       }
@@ -130,8 +135,8 @@ export const DashboardPage: React.FC = () => {
       if (localStream) {
         localStream.getTracks().forEach((t) => t.stop());
       }
-      if (videoRef.current && videoRef.current.srcObject) {
-        const s = videoRef.current.srcObject as MediaStream;
+      if (currentVideo && currentVideo.srcObject) {
+        const s = currentVideo.srcObject as MediaStream;
         s.getTracks().forEach((track) => track.stop());
       }
     };
@@ -139,43 +144,41 @@ export const DashboardPage: React.FC = () => {
 
   // Check SpeechRecognition support on mount
   useEffect(() => {
-    const win = window as unknown as IWindow;
-    const SpeechRecognition = win.SpeechRecognition || win.webkitSpeechRecognition;
+    if (!speechSupported) return;
 
-    if (!SpeechRecognition) {
-      setSpeechSupported(false);
-    } else {
-      setSpeechSupported(true);
-      try {
-        const recognition = new SpeechRecognition();
-        recognition.continuous = false;
-        recognition.interimResults = false;
-        recognition.lang = 'en-US';
+    try {
+      const win = window as unknown as IWindow;
+      const SpeechRecognition = win.SpeechRecognition || win.webkitSpeechRecognition;
+      if (!SpeechRecognition) return;
 
-        recognition.onresult = (event: any) => {
-          const transcript = event.results[0][0].transcript.trim().toLowerCase();
-          setSpeechTranscript(transcript);
-          setIsListening(false);
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
 
-          const words = transcript.split(/\s+/);
-          const matched = words.find((w: string) => w.length > 1) || transcript;
-          setMatchedStaffSign(matched);
-        };
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript.trim().toLowerCase();
+        setSpeechTranscript(transcript);
+        setIsListening(false);
 
-        recognition.onerror = () => {
-          setIsListening(false);
-        };
+        const words = transcript.split(/\s+/);
+        const matched = words.find((w: string) => w.length > 1) || transcript;
+        setMatchedStaffSign(matched);
+      };
 
-        recognition.onend = () => {
-          setIsListening(false);
-        };
+      recognition.onerror = () => {
+        setIsListening(false);
+      };
 
-        recognitionRef.current = recognition;
-      } catch (e) {
-        setSpeechSupported(false);
-      }
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recognition;
+    } catch {
+      // SpeechRecognition unavailable or blocked
     }
-  }, []);
+  }, [speechSupported]);
 
   // Handle SpeechSynthesis (TTS) when new word arrives
   useEffect(() => {
@@ -203,7 +206,7 @@ export const DashboardPage: React.FC = () => {
     if (isListening) {
       try {
         recognitionRef.current?.stop();
-      } catch (err) {
+      } catch {
         // ignore
       }
       setIsListening(false);
@@ -213,7 +216,7 @@ export const DashboardPage: React.FC = () => {
       try {
         recognitionRef.current?.start();
         setIsListening(true);
-      } catch (err) {
+      } catch {
         setIsListening(false);
       }
     }
