@@ -27,7 +27,7 @@ interface IWindow extends Window {
 }
 
 export const DashboardPage: React.FC = () => {
-  const { events, latestEvent, isActive, setIsActive, clearLog } = useRecognitionFeed();
+  const { events, latestEvent, isActive, isLiveConnected, setIsActive, clearLog } = useRecognitionFeed();
 
   // Text-To-Speech (TTS) state
   const [ttsEnabled, setTtsEnabled] = useState<boolean>(true);
@@ -416,10 +416,17 @@ export const DashboardPage: React.FC = () => {
                 </h2>
               </div>
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-md bg-amber-50 text-amber-900 border border-amber-300">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500" aria-hidden="true" />
-                  Simulated Demo Mode - Backend Offline
-                </span>
+                {isLiveConnected ? (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-300">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
+                    Live ML Stream (ws://localhost:8000)
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-md bg-amber-50 text-amber-900 border border-amber-300">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500" aria-hidden="true" />
+                    Simulated Demo Feed (Backend Offline)
+                  </span>
+                )}
                 <span className="text-xs font-medium text-slate-500 hidden xl:inline">
                   ({events.length} {events.length === 1 ? 'event' : 'events'})
                 </span>
