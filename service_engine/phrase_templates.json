@@ -1,0 +1,74 @@
+{
+  "wait_time": {
+    "tokens": ["wait", "time"],
+    "en": "Please wait for your turn.",
+    "ta": "தயவுசெய்து உங்கள் முறை வரும் வரை காத்திருக்கவும்.",
+    "hi": "कृपया अपनी बारी का इंतज़ार करें।"
+  },
+  "sick_now": {
+    "tokens": ["sick", "now"],
+    "en": "I am feeling sick and need medical attention right now.",
+    "ta": "நான் இப்போது உடல்நிலை சரியில்லாமல் உணர்கிறேன், அவசர உதவி தேவை.",
+    "hi": "मैं अभी अस्वस्थ महसूस कर रहा हूँ और तुरंत सहायता चाहिए।"
+  },
+  "owie_pain": {
+    "tokens": ["owie"],
+    "en": "I am experiencing pain / hurt here.",
+    "ta": "எனக்கு வலி அதிகமாக இருக்கிறது.",
+    "hi": "मुझे दर्द हो रहा है।"
+  },
+  "where_police": {
+    "tokens": ["where", "police"],
+    "en": "Where is the security or police desk?",
+    "ta": "காவல்துறை அல்லது பாதுகாப்பு மையம் எங்கே உள்ளது?",
+    "hi": "सुरक्षा या पुलिस डेस्क कहाँ है?"
+  },
+  "call_emergency": {
+    "tokens": ["callonphone"],
+    "en": "Please make an emergency phone call for me.",
+    "ta": "தயவுசெய்து எனக்காக அவசர தொலைபேசி அழைப்பு விடுக்கவும்.",
+    "hi": "कृपया मेरे लिए एक आपातकालीन फ़ोन कॉल करें।"
+  },
+  "need_water": {
+    "tokens": ["water", "please"],
+    "en": "Could I please have some water?",
+    "ta": "தயவுசெய்து கொஞ்சம் தண்ணீர் கிடைக்க முடியுமா?",
+    "hi": "क्या मुझे थोड़ा पानी मिल सकता है?"
+  },
+  "pen_please": {
+    "tokens": ["pen", "please"],
+    "en": "Could you please lend me a pen?",
+    "ta": "தயவுசெய்து ஒரு பேனா தர முடியுமா?",
+    "hi": "कृपया मुझे एक पेन दे सकते हैं?"
+  },
+  "thank_you": {
+    "tokens": ["thankyou"],
+    "en": "Thank you very much for your help.",
+    "ta": "உங்கள் உதவிக்கு மிக்க நன்றி.",
+    "hi": "आपकी सहायता के लिए बहुत-बहुत धन्यवाद।"
+  },
+  "hello_greeting": {
+    "tokens": ["hello"],
+    "en": "Hello, good day!",
+    "ta": "வணக்கம், நல்ல நாளாக அமையட்டும்!",
+    "hi": "नमस्ते, आपका दिन शुभ हो!"
+  },
+  "finish_done": {
+    "tokens": ["finish"],
+    "en": "The process is completed / I am finished.",
+    "ta": "செயல்முறை முடிந்தது / நான் முடித்துவிட்டேன்.",
+    "hi": "प्रक्रिया पूरी हो चुकी है।"
+  },
+  "yes_confirm": {
+    "tokens": ["yes"],
+    "en": "Yes, confirmed.",
+    "ta": "ஆம், உறுதிப்படுத்தப்பட்டது.",
+    "hi": "हाँ, पुष्टि की गई।"
+  },
+  "no_deny": {
+    "tokens": ["no"],
+    "en": "No, that is incorrect.",
+    "ta": "இல்லை, அது தவறானது.",
+    "hi": "नहीं, यह सही नहीं है।"
+  }
+}

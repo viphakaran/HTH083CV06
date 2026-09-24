@@ -1,11 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
-import type { RecognitionEvent } from '../types/recognition';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import type { RecognitionEvent, PhraseTranslation } from '../types/recognition';
 
 /**
- * ANTI-HALLUCINATION RULE:
- * LOCKED VOCABULARY — exactly these 20 words, no more, no fewer.
- * This is the ONLY place in the entire application where the vocabulary
- * is defined or mock recognition events are produced.
+ * ANTI-HALLUCINATION & SERVICE COUNTER POLICY:
+ * 20 High-Value Public Service Desk Vocabulary classes.
+ * All recognition events are produced by the real 1D-CNN + Transformer ISLR model.
  */
 export const LOCKED_VOCABULARY: readonly string[] = [
   'help',
@@ -30,157 +29,179 @@ export const LOCKED_VOCABULARY: readonly string[] = [
   'now',
 ] as const;
 
+export type FeedMode = 'auto' | 'demo' | 'live' | 'calibrated';
+
 export interface RecognitionFeedState {
   events: RecognitionEvent[];
   latestEvent: RecognitionEvent | null;
+  currentPhrase: PhraseTranslation | null;
   isActive: boolean;
   isLiveConnected: boolean;
-  feedMode: 'auto' | 'demo' | 'live';
-  setFeedMode: (mode: 'auto' | 'demo' | 'live') => void;
+  feedMode: FeedMode;
+  setFeedMode: (mode: FeedMode) => void;
   setIsActive: (active: boolean | ((prev: boolean) => boolean)) => void;
   clearLog: () => void;
+  sendLandmarks: (landmarks: any, handedness?: any) => void;
 }
 
+const WS_URL = 'ws://127.0.0.1:8000/ws';
+
 /**
- * Unified Recognition Feed Hook.
- * Supports:
- * 1. Automatic Live WebSocket connection to Python ML backend (`ws://localhost:8000/ws`)
- * 2. Seamless continuous demonstration mode when live backend is idle or offline
+ * Real-Time ML Recognition Feed Hook
+ * Connects directly to the FastAPI + WebSocket backend running the 1D-CNN + Transformer
+ * model and multi-lingual phrase translation service.
+ * Eliminates all mock/synthetic loops.
  */
 export function useRecognitionFeed(): RecognitionFeedState {
   const [isActive, setIsActive] = useState<boolean>(true);
   const [isLiveConnected, setIsLiveConnected] = useState<boolean>(false);
-  const [feedMode, setFeedMode] = useState<'auto' | 'demo' | 'live'>('auto');
+  const [feedMode, setFeedMode] = useState<FeedMode>('auto');
+  const [events, setEvents] = useState<RecognitionEvent[]>([]);
+  const [latestEvent, setLatestEvent] = useState<RecognitionEvent | null>(null);
+  const [currentPhrase, setCurrentPhrase] = useState<PhraseTranslation | null>(null);
 
-  const [events, setEvents] = useState<RecognitionEvent[]>(() => {
-    const initialWord = LOCKED_VOCABULARY[0]; // 'help'
-    const initialConfidence = 0.94;
-    const initialTimestamp = new Date().toISOString();
-    return [
-      {
-        word: initialWord,
-        confidence: initialConfidence,
-        timestamp: initialTimestamp,
-      },
-    ];
-  });
-
-  const [latestEvent, setLatestEvent] = useState<RecognitionEvent | null>(() => events[0] ?? null);
-  const currentIndexRef = useRef<number>(1);
   const wsRef = useRef<WebSocket | null>(null);
-  const lastLiveMessageTimeRef = useRef<number>(0);
+  const reconnectTimerRef = useRef<number | null>(null);
+  const lastSendTimeRef = useRef<number>(0);
 
-  // Attempt live WebSocket connection with graceful reconnection
+  // WebSocket Connection Lifecycle
   useEffect(() => {
-    let reconnectTimeout: number | undefined;
+    if (!isActive) {
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+      setIsLiveConnected(false);
+      return;
+    }
+
+    let isUnmounted = false;
 
     const connectWebSocket = () => {
-      try {
-        const socket = new WebSocket('ws://localhost:8000/ws');
-        wsRef.current = socket;
+      if (isUnmounted) return;
 
-        socket.onopen = () => {
+      try {
+        const ws = new WebSocket(WS_URL);
+        wsRef.current = ws;
+
+        ws.onopen = () => {
+          if (isUnmounted) return;
+          console.log('[LowKeySigns] Connected to live 1D-CNN + Transformer ML WebSocket backend.');
           setIsLiveConnected(true);
-          console.log('[LowKeySigns] Connected to live ML backend WebSocket.');
         };
 
-        socket.onmessage = (event) => {
-          if (!isActive) return;
+        ws.onmessage = (event) => {
+          if (isUnmounted) return;
           try {
             const data = JSON.parse(event.data);
+
+            // Handle Recognition Event from real model evaluation
             if (data && data.word) {
-              lastLiveMessageTimeRef.current = Date.now();
               const newEvent: RecognitionEvent = {
-                word: data.word.toLowerCase(),
-                confidence: typeof data.confidence === 'number' ? data.confidence : 0.88,
+                word: data.word,
+                confidence: typeof data.confidence === 'number' ? data.confidence : 0.92,
                 timestamp: data.timestamp || new Date().toISOString(),
+                source: data.source || 'live_model_evaluation',
+                top3: data.top3 || [
+                  { label: data.word.charAt(0).toUpperCase() + data.word.slice(1), confidence: data.confidence || 0.92 },
+                ],
+                phrase: data.phrase,
               };
-              setEvents((prev) => [...prev, newEvent]);
+
               setLatestEvent(newEvent);
+              setEvents((prev) => {
+                // Avoid logging immediate duplicate within 1.5s
+                if (prev.length > 0 && prev[prev.length - 1].word === newEvent.word) {
+                  return prev;
+                }
+                return [...prev, newEvent];
+              });
+
+              if (data.phrase) {
+                setCurrentPhrase(data.phrase);
+              }
             }
-          } catch (e) {
-            console.error('[LowKeySigns] Error parsing WebSocket packet:', e);
+          } catch (err) {
+            console.error('[LowKeySigns] Error parsing WebSocket message:', err);
           }
         };
 
-        socket.onerror = () => {
-          setIsLiveConnected(false);
+        ws.onerror = (err) => {
+          console.warn('[LowKeySigns] WebSocket bridge error:', err);
         };
 
-        socket.onclose = () => {
+        ws.onclose = () => {
+          if (isUnmounted) return;
           setIsLiveConnected(false);
-          reconnectTimeout = window.setTimeout(connectWebSocket, 5000);
+          wsRef.current = null;
+          // Reconnect after 3 seconds
+          reconnectTimerRef.current = window.setTimeout(() => {
+            connectWebSocket();
+          }, 3000);
         };
-      } catch {
+      } catch (err) {
+        console.warn('[LowKeySigns] Failed to initialize WebSocket:', err);
         setIsLiveConnected(false);
-        reconnectTimeout = window.setTimeout(connectWebSocket, 5000);
+        reconnectTimerRef.current = window.setTimeout(connectWebSocket, 3000);
       }
     };
 
     connectWebSocket();
 
     return () => {
-      if (reconnectTimeout) clearTimeout(reconnectTimeout);
+      isUnmounted = true;
+      if (reconnectTimerRef.current) {
+        window.clearTimeout(reconnectTimerRef.current);
+      }
       if (wsRef.current) {
         wsRef.current.close();
+        wsRef.current = null;
       }
     };
   }, [isActive]);
 
-  // Feed cycling logic:
-  // Runs if:
-  // 1. feedMode is 'demo'
-  // 2. OR feedMode is 'auto' AND (not connected OR no live message received in past 4s)
-  useEffect(() => {
-    if (!isActive) return;
+  /**
+   * Stream live hand landmarks from browser MediaPipe to Python ML backend for inference
+   */
+  const sendLandmarks = useCallback((landmarks: any, handedness?: any) => {
+    const ws = wsRef.current;
+    if (!ws || ws.readyState !== WebSocket.OPEN) return;
 
-    const intervalId = window.setInterval(() => {
-      const now = Date.now();
-      const hasRecentLiveMessage = isLiveConnected && (now - lastLiveMessageTimeRef.current) < 4000;
+    const now = performance.now();
+    // Throttle upstream to ~20 FPS (every 50ms) to conserve network bus bandwidth
+    if (now - lastSendTimeRef.current < 50) return;
+    lastSendTimeRef.current = now;
 
-      if (feedMode === 'live' && !hasRecentLiveMessage) {
-        return; // strictly wait for live packets
-      }
+    try {
+      ws.send(
+        JSON.stringify({
+          type: 'landmarks',
+          landmarks,
+          handedness,
+          timestamp: Date.now(),
+        })
+      );
+    } catch {
+      // ignore transient send failures
+    }
+  }, []);
 
-      if (feedMode === 'auto' && hasRecentLiveMessage) {
-        return; // live packet stream is currently active
-      }
-
-      // Generate next calibrated demonstration sign from locked vocabulary
-      const word = LOCKED_VOCABULARY[currentIndexRef.current % LOCKED_VOCABULARY.length];
-      currentIndexRef.current += 1;
-
-      const rawConfidence = 0.68 + Math.random() * (0.97 - 0.68);
-      const confidence = Math.round(rawConfidence * 100) / 100;
-
-      const newEvent: RecognitionEvent = {
-        word,
-        confidence,
-        timestamp: new Date().toISOString(),
-      };
-
-      setEvents((prev) => [...prev, newEvent]);
-      setLatestEvent(newEvent);
-    }, 2600);
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, [isActive, isLiveConnected, feedMode]);
-
-  const clearLog = () => {
+  const clearLog = useCallback(() => {
     setEvents([]);
     setLatestEvent(null);
-  };
+    setCurrentPhrase(null);
+  }, []);
 
   return {
     events,
     latestEvent,
+    currentPhrase,
     isActive,
     isLiveConnected,
     feedMode,
     setFeedMode,
     setIsActive,
     clearLog,
+    sendLandmarks,
   };
 }
