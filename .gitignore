@@ -1,0 +1,9 @@
+backend/venv/
+backend/WLASL_repo/
+backend/data/raw_videos/
+backend/data/landmarks/
+*.mp4
+*.npy
+*.npz
+frontend/node_modules/
+frontend/dist/
