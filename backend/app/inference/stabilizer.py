@@ -54,7 +54,6 @@ class PredictionStabilizer:
         self.consecutive_count: int = 0
         self.last_accepted_sign: Optional[str] = None
         self.last_accepted_timestamp: float = 0.0
-        self.sliding_buffer: List[np.ndarray] = []
 
     def _load_vocabulary(self):
         """Loads vocabulary definitions from config/vocabulary.json."""
@@ -192,4 +191,3 @@ class PredictionStabilizer:
         self.consecutive_count = 0
         self.last_accepted_sign = None
         self.last_accepted_timestamp = 0.0
-        self.sliding_buffer.clear()

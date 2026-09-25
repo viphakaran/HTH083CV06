@@ -6,6 +6,8 @@ Exposes REST endpoints and a high-frequency WebSocket for real-time sign recogni
 import json
 import time
 from datetime import datetime
+
+import numpy as np
 from typing import List, Dict, Any, Optional
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
@@ -233,7 +235,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     await broadcast_message(payload)
 
                 # 3. Direct sequence evaluation
-                elif msg_type == "sequence" or "sequence" in msg:
+                elif msg_type == "sequence" and isinstance(msg.get("sequence"), list):
                     seq_data = np.array(msg.get("sequence"), dtype=np.float32)
                     if seq_data.ndim == 2:
                         seq_data = np.expand_dims(seq_data, axis=0)
