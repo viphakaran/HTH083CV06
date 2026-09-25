@@ -1,6 +1,6 @@
 # LowKeySigns — Multi-Condition Robustness Evaluation Report
 **Challenge**: HTH-CV-09 (Accessibility-First Sign Language Communication Bridge)  
-**Date**: 2026-09-25 02:11:50  
+**Date**: 2026-09-25 06:51:07  
 **Evaluation Set**: 50 landmark sequences evaluated under controlled transformations  
 
 ---
