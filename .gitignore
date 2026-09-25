@@ -9,3 +9,6 @@ __pycache__/
 *.npz
 frontend/node_modules/
 frontend/dist/
+.venv/
+backend/.venv/
+*.log

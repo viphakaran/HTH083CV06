@@ -1,0 +1,50 @@
+{
+  "system": {
+    "app_name": "LowKeySigns",
+    "app_subtitle": "Accessibility Communication Bridge",
+    "version": "1.0.0",
+    "environment": "development"
+  },
+  "server": {
+    "host": "127.0.0.1",
+    "port": 8000,
+    "cors_origins": ["*"]
+  },
+  "frontend": {
+    "port": 5173
+  },
+  "model": {
+    "architecture": "1D-CNN + Transformer",
+    "params": 1836569,
+    "weights_path": "backend/models/islr-fp16-192-8-seed42-fold0-best.h5",
+    "label_map_path": "backend/models/sign_to_prediction_index_map.json",
+    "input_channels": 708,
+    "max_len": 384,
+    "num_classes": 250,
+    "dim": 192
+  },
+  "inference": {
+    "sequence_length": 30,
+    "stride": 15,
+    "confidence_threshold": 0.50,
+    "consecutive_frames_required": 2,
+    "cooldown_seconds": 1.8,
+    "service_mode": true,
+    "non_service_suppression_weight": 0.05,
+    "top_k": 3
+  },
+  "tts": {
+    "enabled": true,
+    "engine": "sapi",
+    "rate": 1,
+    "volume": 100,
+    "cooldown_seconds": 2.0
+  },
+  "camera": {
+    "device_index": 0,
+    "width": 640,
+    "height": 480,
+    "fps": 30,
+    "enable_server_camera": false
+  }
+}

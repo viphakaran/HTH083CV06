@@ -2,14 +2,12 @@
 setlocal enabledelayedexpansion
 
 echo ========================================================
-echo   LowKeySigns - Accessibility Communication Bridge
-echo   Starting Backend API Service (FastAPI + Uvicorn)
+echo   LowKeySigns - Pipeline Benchmark and Robustness Audit
 echo ========================================================
 
 cd /d "%~dp0"
 
 set "PYTHON_EXE=C:\A_Hackathon_HackTheHorizon\LowKeySigns\service_engine\.venv\Scripts\python.exe"
-
 if not exist "!PYTHON_EXE!" (
     if exist "backend\.venv\Scripts\python.exe" (
         set "PYTHON_EXE=backend\.venv\Scripts\python.exe"
@@ -22,15 +20,16 @@ if not exist "!PYTHON_EXE!" (
     )
 )
 
-echo Using Python: !PYTHON_EXE!
-echo Server running at: http://127.0.0.1:8000
-echo WebSocket endpoint: ws://127.0.0.1:8000/ws
-echo API Documentation: http://127.0.0.1:8000/docs
-echo.
-
-set PYTHONPATH=%~dp0backend;%PYTHONPATH%
+set PYTHONPATH=%~dp0;%~dp0backend;%PYTHONPATH%
 set TF_ENABLE_ONEDNN_OPTS=0
 
-"!PYTHON_EXE!" -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+echo [1/2] Running Real-Time Inference Benchmark...
+"!PYTHON_EXE!" scripts\benchmark\benchmark_pipeline.py
 
-pause
+echo.
+echo [2/2] Running Multi-Condition Environmental Robustness Audit...
+"!PYTHON_EXE!" scripts\test\test_robustness.py
+
+echo.
+echo Benchmark reports generated in docs\
+if not "%1"=="--no-pause" pause

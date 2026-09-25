@@ -262,9 +262,6 @@ export const CIVIC_CONTEXT_MAP: Record<string, CivicActionProtocol> = {
   },
 };
 
-/**
- * Groupings of the 20 words by civic counter sector.
- */
 export const CIVIC_SECTORS = [
   {
     id: 'all',

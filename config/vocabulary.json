@@ -1,0 +1,217 @@
+{
+  "service_name": "LowKeySigns Public Service Vocabulary",
+  "version": "1.0.0",
+  "description": "Configurable service-counter sign vocabulary mapped from the 250-class Google ISLR model.",
+  "filter_mode": "service_priority",
+  "active_classes": [
+    "wait",
+    "time",
+    "sick",
+    "owie",
+    "police",
+    "fireman",
+    "callonphone",
+    "water",
+    "pen",
+    "pencil",
+    "where",
+    "who",
+    "why",
+    "person",
+    "hello",
+    "bye",
+    "please",
+    "thankyou",
+    "yes",
+    "no",
+    "finish",
+    "now",
+    "tomorrow"
+  ],
+  "definitions": {
+    "wait": {
+      "display": "Wait",
+      "category": "Queue & Timing",
+      "description": "Request or indication to pause or hold briefly",
+      "phrase": "Please wait for your turn.",
+      "ta": "தயவுசெய்து உங்கள் முறை வரும் வரை காத்திருக்கவும்.",
+      "hi": "कृपया अपनी बारी का इंतज़ार करें।"
+    },
+    "time": {
+      "display": "Time",
+      "category": "Queue & Timing",
+      "description": "Inquiry regarding schedule, wait time, or appointment hour",
+      "phrase": "What is the time or schedule?",
+      "ta": "நேரம் அல்லது அட்டவணை என்ன?",
+      "hi": "समय या कार्यक्रम क्या है?"
+    },
+    "sick": {
+      "display": "Sick / Unwell",
+      "category": "Medical & Triage",
+      "description": "Health status indication or unwell symptom",
+      "phrase": "I am feeling unwell and need assistance.",
+      "ta": "நான் உடல்நிலை சரியில்லாமல் உணர்கிறேன், உதவி தேவை.",
+      "hi": "मैं अस्वस्थ महसूस कर रहा हूँ और सहायता चाहिए।"
+    },
+    "owie": {
+      "display": "Pain / Hurt",
+      "category": "Medical & Triage",
+      "description": "Expression of acute physical discomfort or pain",
+      "phrase": "I am experiencing pain or injury.",
+      "ta": "எனக்கு வலி அல்லது காயம் ஏற்பட்டுள்ளது.",
+      "hi": "मुझे दर्द या चोट लगी है।"
+    },
+    "police": {
+      "display": "Police / Security",
+      "category": "Emergency & Security",
+      "description": "Request for desk security or police assistance",
+      "phrase": "Where is security or the police desk?",
+      "ta": "காவல்துறை அல்லது பாதுகாப்பு மையம் எங்கே?",
+      "hi": "सुरक्षा या पुलिस डेस्क कहाँ है?"
+    },
+    "fireman": {
+      "display": "Fire / Emergency",
+      "category": "Emergency & Security",
+      "description": "Fire or urgent civic emergency alert",
+      "phrase": "Emergency or fire assistance required immediately.",
+      "ta": "அவசர தீயணைப்பு உதவி உடனடியாக தேவைப்படுகிறது.",
+      "hi": "आपातकालीन आग सहायता तुरंत आवश्यक है।"
+    },
+    "callonphone": {
+      "display": "Call / Phone",
+      "category": "Communication",
+      "description": "Request to make an urgent telephone call",
+      "phrase": "Please place a phone call for me.",
+      "ta": "தயவுசெய்து எனக்காக ஒரு தொலைபேசி அழைப்பு விடுக்கவும்.",
+      "hi": "कृपया मेरे लिए एक फ़ोन कॉल करें।"
+    },
+    "water": {
+      "display": "Water",
+      "category": "Basic Needs",
+      "description": "Request for drinking water",
+      "phrase": "Could I please have some water?",
+      "ta": "தயவுசெய்து கொஞ்சம் தண்ணீர் கிடைக்க முடியுமா?",
+      "hi": "क्या मुझे थोड़ा पानी मिल सकता है?"
+    },
+    "pen": {
+      "display": "Pen",
+      "category": "Desk Items",
+      "description": "Request to borrow a pen for paperwork",
+      "phrase": "Could you please lend me a pen?",
+      "ta": "படிவம் நிரப்ப தயவுசெய்து ஒரு பேனா தர முடியுமா?",
+      "hi": "कृपया मुझे एक पेन दे सकते हैं?"
+    },
+    "pencil": {
+      "display": "Pencil",
+      "category": "Desk Items",
+      "description": "Request to borrow a pencil",
+      "phrase": "Could you please lend me a pencil?",
+      "ta": "தயவுசெய்து ஒரு பென்சில் தர முடியுமா?",
+      "hi": "कृपया मुझे एक पेंसिल दे सकते हैं?"
+    },
+    "where": {
+      "display": "Where?",
+      "category": "Wayfinding",
+      "description": "Inquiry regarding location, room, or counter",
+      "phrase": "Where is the service counter or office?",
+      "ta": "சேவை மையம் அல்லது அலுவலகம் எங்கே உள்ளது?",
+      "hi": "सेवा डेस्क या कार्यालय कहाँ है?"
+    },
+    "who": {
+      "display": "Who?",
+      "category": "Inquiry",
+      "description": "Inquiry regarding officer or counter staff in charge",
+      "phrase": "Who is the staff member in charge?",
+      "ta": "பொறுப்பான ஊழியர் யார்?",
+      "hi": "प्रभारी कर्मचारी कौन हैं?"
+    },
+    "why": {
+      "display": "Why?",
+      "category": "Inquiry",
+      "description": "Request for reason or explanation of processing delay",
+      "phrase": "Why is there a delay or requirement?",
+      "ta": "தாமதம் அல்லது தேவைக்கான காரணம் என்ன?",
+      "hi": "देरी या आवश्यकता का कारण क्या है?"
+    },
+    "person": {
+      "display": "Staff / Person",
+      "category": "Civic & Intake",
+      "description": "Inquiry if a human representative is available",
+      "phrase": "I would like to speak with a representative.",
+      "ta": "நான் ஒரு ஊழியருடன் பேச விரும்புகிறேன்.",
+      "hi": "मैं किसी प्रतिनिधि से बात करना चाहता हूँ।"
+    },
+    "hello": {
+      "display": "Hello",
+      "category": "Courtesy & Dialogue",
+      "description": "Initial greeting to counter staff",
+      "phrase": "Hello, good day!",
+      "ta": "வணக்கம், நல்ல நாளாக அமையட்டும்!",
+      "hi": "नमस्ते, आपका दिन शुभ हो!"
+    },
+    "bye": {
+      "display": "Goodbye",
+      "category": "Courtesy & Dialogue",
+      "description": "Closing courtesy",
+      "phrase": "Goodbye, thank you for your help.",
+      "ta": "சென்று வருகிறேன், உங்கள் உதவிக்கு நன்றி.",
+      "hi": "अलविदा, आपकी मदद के लिए धन्यवाद।"
+    },
+    "please": {
+      "display": "Please",
+      "category": "Courtesy & Dialogue",
+      "description": "Polite request modifier",
+      "phrase": "Please assist me.",
+      "ta": "தயவுசெய்து எனக்கு உதவுங்கள்.",
+      "hi": "कृपया मेरी सहायता करें।"
+    },
+    "thankyou": {
+      "display": "Thank You",
+      "category": "Courtesy & Dialogue",
+      "description": "Expression of gratitude",
+      "phrase": "Thank you very much for your help.",
+      "ta": "உங்கள் உதவிக்கு மிக்க நன்றி.",
+      "hi": "आपकी सहायता के लिए बहुत-बहुत धन्यवाद।"
+    },
+    "yes": {
+      "display": "Yes",
+      "category": "Affirmation",
+      "description": "Affirmative confirmation or agreement",
+      "phrase": "Yes, confirmed.",
+      "ta": "ஆம், உறுதிப்படுத்தப்பட்டது.",
+      "hi": "हाँ, पुष्टि की गई।"
+    },
+    "no": {
+      "display": "No",
+      "category": "Negation",
+      "description": "Negative response or dissent",
+      "phrase": "No, that is incorrect.",
+      "ta": "இல்லை, அது தவறானது.",
+      "hi": "नहीं, यह सही नहीं है।"
+    },
+    "finish": {
+      "display": "Done / Finished",
+      "category": "Status",
+      "description": "Indication of completed task or paperwork",
+      "phrase": "The application process is completed.",
+      "ta": "செயல்முறை முடிந்தது / நான் முடித்துவிட்டேன்.",
+      "hi": "प्रक्रिया पूरी हो चुकी है।"
+    },
+    "now": {
+      "display": "Now / Immediate",
+      "category": "Queue & Timing",
+      "description": "Urgent present requirement",
+      "phrase": "This is needed immediately.",
+      "ta": "இது உடனடியாக தேவைப்படுகிறது.",
+      "hi": "यह तुरंत आवश्यक है।"
+    },
+    "tomorrow": {
+      "display": "Tomorrow",
+      "category": "Queue & Timing",
+      "description": "Schedule adjustment for the following day",
+      "phrase": "Can I return tomorrow?",
+      "ta": "நான் நாளை வர முடியுமா?",
+      "hi": "क्या मैं कल वापस आ सकता हूँ?"
+    }
+  }
+}
