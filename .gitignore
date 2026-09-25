@@ -5,6 +5,7 @@ backend/data/landmarks/
 __pycache__/
 *.pyc
 *.mp4
+!frontend/public/assets/signs/videos/*.mp4
 *.npy
 *.npz
 frontend/node_modules/

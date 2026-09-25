@@ -10,7 +10,6 @@ import {
   MIDDLE_MCP_IDX,
 } from '../services/handLandmarker';
 import {
-  CIVIC_CONTEXT_MAP,
   CIVIC_SECTORS,
   getCivicProtocol,
   type CivicActionProtocol,
@@ -1577,19 +1576,36 @@ export const DashboardPage: React.FC = () => {
                 </span>
               </div>
 
-              {/* Main Protocol Banner */}
+              {/* Main Protocol Banner with Embedded ASL Mini-Video Loop */}
               <div className="p-4 rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50/60 to-white flex flex-col gap-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
+                <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                  <div className="flex-1">
                     <span className="text-xs font-semibold text-[#1F3864] uppercase tracking-wide">
                       {activeCivicProtocol.civicDomain}
                     </span>
                     <h4 className="text-lg font-bold text-slate-900 mt-0.5">
                       {activeCivicProtocol.intentSummary}
                     </h4>
+                    <p className="text-xs text-slate-600 mt-1">
+                      Demonstrated Sign: <strong className="capitalize text-[#1F3864]">"{activeCivicProtocol.word}"</strong>
+                    </p>
                   </div>
-                  <div className="w-10 h-10 rounded-lg bg-[#1F3864] text-white flex items-center justify-center shrink-0">
-                    <ShieldCheck className="w-5 h-5" />
+
+                  {/* Real Looping ASL Mini-Video Demonstration */}
+                  <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-xl bg-slate-950 border border-slate-200 overflow-hidden shrink-0 shadow-xs relative">
+                    <video
+                      key={activeCivicProtocol.word}
+                      src={`/assets/signs/videos/${activeCivicProtocol.word.replace(/\s+/g, '_')}.mp4`}
+                      poster={`/assets/signs/${activeCivicProtocol.word.replace(/\s+/g, '_')}.png`}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute bottom-1 right-1 bg-slate-900/80 text-[8px] font-mono text-emerald-400 px-1.5 py-0.5 rounded">
+                      ASL Loop
+                    </div>
                   </div>
                 </div>
 
@@ -1660,7 +1676,7 @@ export const DashboardPage: React.FC = () => {
                 {/* 20-word grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {activeSector.words.map((word) => {
-                    const protocol = CIVIC_CONTEXT_MAP[word];
+                    const protocol = getCivicProtocol(word);
                     const isCurrent = (inspectedWord || latestEvent?.word) === word;
                     return (
                       <button
