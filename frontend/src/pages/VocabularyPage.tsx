@@ -166,6 +166,95 @@ const WORD_CATEGORIES: Record<
       'Form bent "Y" handshapes with both hands (thumbs and pinkies extended) with palms facing up; drop both hands downward together.',
     pocketsignSlug: 'now',
   },
+  thankyou: {
+    category: 'Courtesy & Dialogue',
+    description: 'Polite expression of gratitude and closing interaction.',
+    instructions:
+      'Touch the fingertips of your flat open dominant hand to your chin/lips, then move your hand outward and slightly down toward the other person.',
+    pocketsignSlug: 'thankyou',
+  },
+  owie: {
+    category: 'Medical & Triage',
+    description: 'Expression of physical discomfort, ache, or acute pain.',
+    instructions:
+      'Point index fingers toward each other with slight twisting motion near the location of discomfort or centered in chest neutral space.',
+    pocketsignSlug: 'pain',
+  },
+  hello: {
+    category: 'Courtesy & Dialogue',
+    description: 'Standard greeting to initiate communication at the counter.',
+    instructions:
+      'Extend dominant flat hand to the temple and move it outward in a crisp salute motion.',
+    pocketsignSlug: 'hello',
+  },
+  bye: {
+    category: 'Courtesy & Dialogue',
+    description: 'Farewell gesture indicating conclusion of counter visit.',
+    instructions:
+      'Hold dominant hand up with palm forward and wave fingers gently up and down.',
+    pocketsignSlug: 'bye',
+  },
+  time: {
+    category: 'Queue & Timing',
+    description: 'Inquiry about schedule, duration, or current appointment hour.',
+    instructions:
+      'Tap index finger twice onto the back of your non-dominant wrist as if pointing to a watch.',
+    pocketsignSlug: 'time',
+  },
+  water: {
+    category: 'Basic Needs & Comfort',
+    description: 'Request for drinking water or location of dispenser.',
+    instructions:
+      'Form a "W" handshape with dominant index, middle, and ring fingers; tap index against your chin twice.',
+    pocketsignSlug: 'water',
+  },
+  finish: {
+    category: 'Civic Administration',
+    description: 'Indicates completed form submission or finished task.',
+    instructions:
+      'Hold both hands in front with palms facing you, then flick them outward so palms face down.',
+    pocketsignSlug: 'finish',
+  },
+  police: {
+    category: 'Security & Navigation',
+    description: 'Request for security personnel or police officer assistance.',
+    instructions:
+      'Form a "C" handshape with your dominant hand and tap it over the left side of your chest where a badge rests.',
+    pocketsignSlug: 'police',
+  },
+  fireman: {
+    category: 'Medical & Triage',
+    description: 'Alert for fire emergency or emergency firefighter services.',
+    instructions:
+      'Hold your flat dominant hand (B handshape) against your forehead with palm facing out, representing a firefighter badge.',
+  },
+  callonphone: {
+    category: 'Medical & Triage',
+    description: 'Request to place an urgent telephone call on visitor’s behalf.',
+    instructions:
+      'Form a "Y" handshape (thumb and pinky extended) and hold thumb to your ear and pinky toward your mouth like a phone.',
+  },
+  pen: {
+    category: 'Civic Administration',
+    description: 'Request for writing instrument to complete paperwork.',
+    instructions:
+      'Mime holding a pen with dominant fingers and write a stroke across your flat open non-dominant palm.',
+    pocketsignSlug: 'pen',
+  },
+  who: {
+    category: 'Civic Administration',
+    description: 'Inquiry regarding identity of staff member or official in charge.',
+    instructions:
+      'Place thumb of dominant hand on chin with index finger extended, then wiggle the index finger up and down.',
+    pocketsignSlug: 'who',
+  },
+  person: {
+    category: 'Civic Administration',
+    description: 'Request for a human representative or dedicated counter officer.',
+    instructions:
+      'Hold both flat open hands vertically facing each other in front of your chest and trace downward together.',
+    pocketsignSlug: 'person',
+  },
 };
 
 export const VocabularyPage: React.FC = () => {

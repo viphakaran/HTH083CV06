@@ -490,7 +490,7 @@ export const DashboardPage: React.FC = () => {
   const confidenceInfo = latestEvent ? getConfidenceInfo(latestEvent.confidence) : null;
 
   // Active word to show in Civic Context (inspected or latest)
-  const activeCivicWord = inspectedWord || latestEvent?.word || 'help';
+  const activeCivicWord = inspectedWord || latestEvent?.word || 'wait';
   const activeCivicProtocol: CivicActionProtocol = getCivicProtocol(activeCivicWord);
 
   // Filtered vocabulary list according to selected civic sector

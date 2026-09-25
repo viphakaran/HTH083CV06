@@ -82,5 +82,29 @@
     "en": "What time should I return tomorrow?",
     "ta": "நான் நாளை எந்த நேரத்தில் வர வேண்டும்?",
     "hi": "मुझे कल किस समय वापस आना चाहिए?"
+  },
+  "yes_confirm": {
+    "tokens": ["yes"],
+    "en": "Yes, confirmed.",
+    "ta": "ஆம், உறுதிப்படுத்தப்பட்டது.",
+    "hi": "हाँ, पुष्टि की गई।"
+  },
+  "no_decline": {
+    "tokens": ["no"],
+    "en": "No, that is not what I need.",
+    "ta": "இல்லை, அது என்னுக்கு தேவையில்லை.",
+    "hi": "नहीं, यह मुझे नहीं चाहिए।"
+  },
+  "bye_farewell": {
+    "tokens": ["bye"],
+    "en": "Goodbye, thank you for your help.",
+    "ta": "சென்று வருகிறேன், உங்கள் உதவிக்கு நன்றி.",
+    "hi": "अलविदा, आपकी मदद के लिए धन्यवाद।"
+  },
+  "who_staff": {
+    "tokens": ["who"],
+    "en": "Who is the staff member in charge here?",
+    "ta": "இங்கே பொறுப்பான ஊழியர் யார்?",
+    "hi": "यहाँ प्रभारी कर्मचारी कौन हैं?"
   }
 }
