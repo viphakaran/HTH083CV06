@@ -199,6 +199,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
                         if accepted_event:
                             # Expand into multi-lingual canonical phrase
+                            accepted_event["word"] = accepted_event["sign"]
                             phrase_data = phrase_builder.build_phrase([accepted_event["sign"]])
                             accepted_event["phrase"] = phrase_data
                             accepted_event["type"] = "recognition"

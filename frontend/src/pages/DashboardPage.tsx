@@ -12,6 +12,7 @@ import {
 import {
   CIVIC_CONTEXT_MAP,
   CIVIC_SECTORS,
+  getCivicProtocol,
   type CivicActionProtocol,
 } from '../services/civicContext';
 import {
@@ -491,7 +492,7 @@ export const DashboardPage: React.FC = () => {
 
   // Active word to show in Civic Context (inspected or latest)
   const activeCivicWord = inspectedWord || latestEvent?.word || 'help';
-  const activeCivicProtocol: CivicActionProtocol = CIVIC_CONTEXT_MAP[activeCivicWord] || CIVIC_CONTEXT_MAP.help;
+  const activeCivicProtocol: CivicActionProtocol = getCivicProtocol(activeCivicWord);
 
   // Filtered vocabulary list according to selected civic sector
   const activeSector = CIVIC_SECTORS.find((s) => s.id === selectedCivicSector) || CIVIC_SECTORS[0];

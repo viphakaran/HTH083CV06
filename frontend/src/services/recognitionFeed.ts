@@ -95,15 +95,15 @@ export function useRecognitionFeed(): RecognitionFeedState {
           try {
             const data = JSON.parse(event.data);
 
-            // Handle Recognition Event from real model evaluation
-            if (data && data.word) {
+            const signWord = data.word || data.sign || data.display;
+            if (data && signWord) {
               const newEvent: RecognitionEvent = {
-                word: data.word,
+                word: signWord,
                 confidence: typeof data.confidence === 'number' ? data.confidence : 0.92,
-                timestamp: data.timestamp || new Date().toISOString(),
+                timestamp: typeof data.timestamp === 'number' ? new Date(data.timestamp * 1000).toISOString() : (data.timestamp || new Date().toISOString()),
                 source: data.source || 'live_model_evaluation',
                 top3: data.top3 || [
-                  { label: data.word.charAt(0).toUpperCase() + data.word.slice(1), confidence: data.confidence || 0.92 },
+                  { label: signWord.charAt(0).toUpperCase() + signWord.slice(1), confidence: data.confidence || 0.92 },
                 ],
                 phrase: data.phrase,
               };

@@ -224,6 +224,30 @@ export const CIVIC_CONTEXT_MAP: Record<string, CivicActionProtocol> = {
     recommendedNextSign: 'here',
     quickStaffReplies: ['You are very welcome!', 'Have a great day!', 'Glad we could help today.'],
   },
+  'thank_you': {
+    word: 'thank you',
+    category: 'Dialogue & Civility',
+    urgency: 'courtesy',
+    icon: 'Smile',
+    civicDomain: 'Service Conclusion & Feedback',
+    intentSummary: 'Visitor expressing gratitude and concluding interaction.',
+    clerkAction: 'Return warm sign for "thank you" or bow head slightly. Hand completed paperwork packet.',
+    visitorAssurance: 'You are very welcome. Have a wonderful day!',
+    recommendedNextSign: 'here',
+    quickStaffReplies: ['You are very welcome!', 'Have a great day!', 'Glad we could help today.'],
+  },
+  'thankyou': {
+    word: 'thank you',
+    category: 'Dialogue & Civility',
+    urgency: 'courtesy',
+    icon: 'Smile',
+    civicDomain: 'Service Conclusion & Feedback',
+    intentSummary: 'Visitor expressing gratitude and concluding interaction.',
+    clerkAction: 'Return warm sign for "thank you" or bow head slightly. Hand completed paperwork packet.',
+    visitorAssurance: 'You are very welcome. Have a wonderful day!',
+    recommendedNextSign: 'here',
+    quickStaffReplies: ['You are very welcome!', 'Have a great day!', 'Glad we could help today.'],
+  },
   yes: {
     word: 'yes',
     category: 'Dialogue & Civility',
@@ -294,3 +318,10 @@ export const CIVIC_SECTORS = [
     words: ['wait', 'here', 'now', 'where'],
   },
 ];
+
+export function getCivicProtocol(word?: string): CivicActionProtocol {
+  if (!word) return CIVIC_CONTEXT_MAP.help;
+  const raw = word.toLowerCase().trim();
+  const normalized = raw.replace(/_/g, ' ');
+  return CIVIC_CONTEXT_MAP[normalized] || CIVIC_CONTEXT_MAP[raw] || CIVIC_CONTEXT_MAP.help;
+}

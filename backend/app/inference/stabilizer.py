@@ -176,6 +176,7 @@ class PredictionStabilizer:
 
         accepted_event = {
             "sign": best_sign,
+            "word": best_sign,
             "display": self.get_display_name(best_sign),
             "category": self.get_sign_category(best_sign),
             "confidence": round(best_conf, 3),
