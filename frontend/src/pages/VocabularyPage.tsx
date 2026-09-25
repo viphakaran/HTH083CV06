@@ -3,7 +3,6 @@ import { LOCKED_VOCABULARY } from '../services/recognitionFeed';
 import {
   BookOpen,
   Search,
-  Layers,
   ShieldCheck,
   CheckCircle2,
   ExternalLink,
@@ -153,17 +152,17 @@ export const VocabularyPage: React.FC = () => {
                     </span>
                   </div>
 
-                  {/* Image/Icon Placeholder for Sign */}
-                  <div className="w-full h-32 rounded-lg bg-slate-50 border border-dashed border-slate-200 flex flex-col items-center justify-center p-3 text-center group-hover:border-[#1F3864]/40 transition-colors relative overflow-hidden">
-                    <div className="w-10 h-10 rounded-full bg-white shadow-2xs border border-slate-200 flex items-center justify-center mb-2">
-                      <Layers className="w-5 h-5 text-[#1F3864]" aria-hidden="true" />
+                  {/* Embedded Sign Gesture Illustration Image */}
+                  <div className="w-full h-44 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden relative group-hover:border-[#1F3864]/50 group-hover:shadow-sm transition-all flex items-center justify-center">
+                    <img
+                      src={`/assets/signs/${word.replace(/\s+/g, '_')}.png`}
+                      alt={`ASL sign gesture for ${word}`}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                    <div className="absolute bottom-2 right-2 bg-slate-900/70 backdrop-blur-xs text-white text-[9px] font-mono px-2 py-0.5 rounded shadow-xs">
+                      ASL Visual
                     </div>
-                    <span className="text-[11px] font-medium text-slate-700 capitalize">
-                      Sign: "{word}"
-                    </span>
-                    <span className="text-[9px] font-mono text-slate-400 mt-0.5">
-                      /assets/signs/{word.replace(/\s+/g, '_')}.png
-                    </span>
                   </div>
 
                   {/* Word title and description */}
